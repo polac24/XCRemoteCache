@@ -85,7 +85,8 @@ public class XCIntegrate {
                 env: env,
                 binariesDir: binariesDir,
                 fakeSrcRoot: fakeSrcRoot,
-                outputPath: output
+                outputPath: output,
+                xcccPath: config.xcccFile
             )
             let configurationOracle = IncludeExcludeOracle(
                 excludes: configurationsExclude.integrateArrayArguments,
@@ -97,7 +98,8 @@ public class XCIntegrate {
             )
             let buildSettingsAppender = XcodeProjBuildSettingsIntegrateAppender(
                 mode: context.mode,
-                repoRoot: context.repoRoot
+                repoRoot: context.repoRoot,
+                fakeSrcRoot: context.fakeSrcRoot
             )
             let lldbPatcher: LLDBInitPatcher
             switch lldbMode {

@@ -66,14 +66,14 @@ extension PrepareContext {
         primaryBranch = config.primaryBranch
         let sourceRoot = URL(fileURLWithPath: config.sourceRoot, isDirectory: true)
         repoRoot = URL(fileURLWithPath: config.repoRoot, relativeTo: sourceRoot)
-        remoteCommitLocation = URL(fileURLWithPath: config.remoteCommitFile, relativeTo: repoRoot)
+        remoteCommitLocation = URL(fileURLWithPath: config.remoteCommitFile, relativeTo: sourceRoot)
         maximumSha = config.cacheCommitHistory
         self.offline = offline
         guard let address = URL(string: config.recommendedCacheAddress) else {
             throw PrepareContextError.invalidRemoteCacheAddress(config.recommendedCacheAddress)
         }
         recommendedCacheAddress = address
-        xcccCommand = URL(fileURLWithPath: config.xcccFile, relativeTo: repoRoot)
+        xcccCommand = URL(fileURLWithPath: config.xcccFile, relativeTo: sourceRoot)
         cacheAddresses = try config.cacheAddresses.map(URL.build)
         cacheHealthPath = config.cacheHealthPath
         cacheHealthPathProbeCount = config.cacheHealthPathProbeCount
