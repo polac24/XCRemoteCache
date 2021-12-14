@@ -227,11 +227,13 @@ struct XcodeProjIntegrate: Integrate {
         let previousRCPhases = target.buildPhases.filter(isRCPhase)
         target.buildPhases.removeAll(where: previousRCPhases.contains)
 
-        if target.buildPhases.map(\.buildPhase).contains(.sources) {
+        // Insert prebuild script right before compiling phase
+        let allBuildPhaseTypes = target.buildPhases.map(\.buildPhase)
+        if let sourceTypeIndex = allBuildPhaseTypes.firstIndex(of: .sources) {
             // add (pre|post)build phases only when a target has some compilation steps
             // otherwise they make no sense (nothing to store in an artifact)
             pbxproj.add(object: prebuildPhase)
-            target.buildPhases.insert(prebuildPhase, at: 0)
+            target.buildPhases.insert(prebuildPhase, at: sourceTypeIndex)
             pbxproj.add(object: postbuildPhase)
             target.buildPhases.append(postbuildPhase)
         }
