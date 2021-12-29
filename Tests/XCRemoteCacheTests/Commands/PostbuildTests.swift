@@ -76,7 +76,8 @@ class PostbuildTests: FileXCTestCase {
         product: "/Product",
         source: "/Source",
         intermediate: "/Intermediate",
-        bundle: nil
+        bundle: nil,
+        derivedSource: "/Intermediate/DerivedSource"
     )
     private var overrideManager = FingerprintOverrideManagerImpl(
         overridingFileExtensions: ["swiftmodule"],

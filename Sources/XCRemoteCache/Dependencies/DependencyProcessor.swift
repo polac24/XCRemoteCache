@@ -29,6 +29,8 @@ public struct Dependency: Equatable {
         case intermediate
         // Product of the target itself
         case ownProduct
+        // Produced in-fly source (e.g. generated mlmodel interface)
+        case derivedSource
         case unknown
     }
 
@@ -56,13 +58,22 @@ class DependencyProcessorImpl: DependencyProcessor {
     private let sourcePath: String
     private let intermediatePath: String
     private let bundlePath: String?
+    private let derivedSourcePath: String
 
-    init(xcode: URL, product: URL, source: URL, intermediate: URL, bundle: URL?) {
+    init(
+        xcode: URL,
+        product: URL,
+        source: URL,
+        intermediate: URL,
+        bundle: URL?,
+        derivedSource: URL
+    ) {
         xcodePath = xcode.path
         productPath = product.path
         sourcePath = source.path
         intermediatePath = intermediate.path
         bundlePath = bundle?.path
+        derivedSourcePath = derivedSource.path
     }
 
     func process(_ files: [URL]) -> [Dependency] {
@@ -75,6 +86,8 @@ class DependencyProcessorImpl: DependencyProcessor {
             let filePath = file.path
             if filePath.hasPrefix(xcodePath) {
                 return Dependency(url: file, type: .xcode)
+            } else if filePath.hasPrefix(derivedSourcePath) {
+                return Dependency(url: file, type: .derivedSource)
             } else if filePath.hasPrefix(intermediatePath) {
                 return Dependency(url: file, type: .intermediate)
             } else if let bundle = bundlePath, filePath.hasPrefix(bundle) {
@@ -104,7 +117,8 @@ class DependencyProcessorImpl: DependencyProcessor {
 
         // Skip:
         // - A fingerprint generated includes Xcode version build number so no need to analyze prepackaged Xcode files
-        // - All files in `*/Interemediates/*` - this file are created on-fly for a given target
+        // - All files in `*/Interemediates/*` - this file are created on-fly for a given target (except DerivedSources
+        //   that still should be compared)
         // - Some files may depend on its own product (e.g. .m may #include *-Swift.h) - we know products will match
         //   because in case of a hit, these will be taken from the artifact
         let irrelevantDependenciesType: [Dependency.Kind] = [.xcode, .intermediate, .ownProduct]

@@ -27,7 +27,8 @@ class DependencyProcessorImplTests: XCTestCase {
         product: "/Product",
         source: "/Source",
         intermediate: "/Intermediate",
-        bundle: "/Bundle"
+        bundle: "/Bundle",
+        derivedSource: "/Intermediate/DerivedSource"
     )
 
     func testIntermediateFileIsSkippedForProductAndSourceSubdirectory() {
@@ -37,7 +38,8 @@ class DependencyProcessorImplTests: XCTestCase {
             product: "/",
             source: "/",
             intermediate: "/Intermediate",
-            bundle: nil
+            bundle: nil,
+            derivedSource: "/Intermediate/DerivedSource"
         )
 
         XCTAssertEqual(
@@ -53,7 +55,8 @@ class DependencyProcessorImplTests: XCTestCase {
             product: "/",
             source: "/",
             intermediate: "/Intermediate",
-            bundle: "/Bundle"
+            bundle: "/Bundle",
+            derivedSource: "/Intermediate/DerivedSource"
         )
 
         XCTAssertEqual(
@@ -108,5 +111,13 @@ class DependencyProcessorImplTests: XCTestCase {
         ])
 
         XCTAssertEqual(dependencies, [.init(url: "/xxx/some", type: .unknown)])
+    }
+
+    func testDerivedSourceNestedInIntermediateIsClassifiedCorrectly() throws {
+        let dependencies = processor.process([
+            "/Intermediate/DerivedSource/someFile",
+        ])
+
+        XCTAssertEqual(dependencies, [.init(url: "/Intermediate/DerivedSource/someFile", type: .derivedSource)])
     }
 }
