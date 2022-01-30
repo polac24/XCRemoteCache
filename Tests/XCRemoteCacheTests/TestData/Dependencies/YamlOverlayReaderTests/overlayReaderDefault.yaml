@@ -1,0 +1,55 @@
+{
+  "case-sensitive": "false",
+  "roots":
+    [
+      {
+        "contents":
+          [
+            {
+              "external-contents": "/tmp/TestDynamicOverlay/FR2/FR2.h",
+              "name": "FR2.h",
+              "type": "file",
+            },
+          ],
+        "name": "/tmp/TestDynamicOverlay/DerivedData/TestDynamicOverlay/Build/Products/Debug-iphonesimulator/FR2.framework/Headers",
+        "type": "directory",
+      },
+      {
+        "contents":
+          [
+            {
+              "external-contents": "/tmp/TestDynamicOverlay/DerivedData/TestDynamicOverlay/Build/Intermediates.noindex/TestDynamicOverlay.build/Debug-iphonesimulator/FR2.build/module.modulemap",
+              "name": "module.modulemap",
+              "type": "file",
+            },
+          ],
+        "name": "/tmp/TestDynamicOverlay/DerivedData/TestDynamicOverlay/Build/Products/Debug-iphonesimulator/FR2.framework/Modules",
+        "type": "directory",
+      },
+      {
+        "contents":
+          [
+            {
+              "external-contents": "/tmp/TestDynamicOverlay/Fr1/Fr1.h",
+              "name": "Fr1.h",
+              "type": "file",
+            },
+          ],
+        "name": "/tmp/TestDynamicOverlay/DerivedData/TestDynamicOverlay/Build/Products/Debug-iphonesimulator/Fr1.framework/Headers",
+        "type": "directory",
+      },
+      {
+        "contents":
+          [
+            {
+              "external-contents": "/tmp/TestDynamicOverlay/DerivedData/TestDynamicOverlay/Build/Intermediates.noindex/TestDynamicOverlay.build/Debug-iphonesimulator/Fr1.build/module.modulemap",
+              "name": "module.modulemap",
+              "type": "file",
+            },
+          ],
+        "name": "/tmp/TestDynamicOverlay/DerivedData/TestDynamicOverlay/Build/Products/Debug-iphonesimulator/Fr1.framework/Modules",
+        "type": "directory",
+      },
+    ],
+  "version": 0,
+}

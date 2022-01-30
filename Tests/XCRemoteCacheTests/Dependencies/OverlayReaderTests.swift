@@ -17,31 +17,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import Foundation
+@testable import XCRemoteCache
+import XCTest
 
-/// Print current configuration to the console
-public class XCConfig {
-    private let outputEncoder: XCRemoteCacheEncoder
+class OverlayReaderTests: XCTestCase {
+    override func setUp() {
 
-    public init(format: XCOutputFormat) {
-        outputEncoder = XCEncoderAbstractFactory().build(for: format)
     }
 
-    public func main() {
-        let env = ProcessInfo.processInfo.environment
-        let fileManager = FileManager.default
-        let config: XCRemoteCacheConfig
-        do {
-            config = try XCRemoteCacheConfigReader(env: env, fileManager: fileManager).readConfiguration()
-        } catch {
-            exit(1, "FATAL: Prepare initialization failed with error: \(error)")
-        }
-
-        do {
-            let output = try outputEncoder.encode(config)
-            print(output)
-        } catch {
-            exit(1, "XCInfo failed with error: \(error)")
-        }
+    func testParsingWithSuccess() throws {
+        let file = try XCTUnwrap(Bundle.module.url(forResource: "overlayReaderDefault", withExtension: "yaml", subdirectory: "TestData/Dependencies/YamlOverlayReaderTests"))
+        let reader = YamlOverlayReader(file, fileReader: FileManager.default)
+        let mappings = try reader.provideMappings()
     }
 }
