@@ -20,20 +20,25 @@
 import Foundation
 
 /// Maps overlay's virtual URL with an actual (local) location
-typealias OverlayMapping = (virtual: URL, local :URL)
+struct OverlayMapping: Hashable {
+    let virtual: URL
+    let local: URL
+}
 
-enum YamlOverlayReaderError: Error {
+enum JsonOverlayReaderError: Error {
     /// The source file is missing
     case missingSourceFile(URL)
     /// The file exists but its content is invalid
     case invalidSourceContent(URL)
+    /// the y
+    case unsupportedFormat
 }
 /// Provides virtual file system overlay mappings
 protocol OverlayReader {
     func provideMappings() throws -> [OverlayMapping]
 }
 
-class YamlOverlayReader: OverlayReader {
+class JsonOverlayReader: OverlayReader {
 
     private struct Overlay: Decodable {
         enum OverlayType: String, Decodable {
@@ -62,24 +67,44 @@ class YamlOverlayReader: OverlayReader {
     }
 
     private lazy var jsonDecoder = JSONDecoder()
-    private let yaml: URL
+    private let json: URL
     private let fileReader: FileReader
 
 
-    init(_ yaml: URL, fileReader: FileReader) {
-        self.yaml = yaml
+    init(_ json: URL, fileReader: FileReader) {
+        self.json = json
         self.fileReader = fileReader
     }
 
     func provideMappings() throws -> [OverlayMapping] {
-        guard let yamlContent = try fileReader.contents(atPath: yaml.path) else {
-            throw YamlOverlayReaderError.missingSourceFile(yaml)
+        guard let jsonContent = try fileReader.contents(atPath: json.path) else {
+            throw JsonOverlayReaderError.missingSourceFile(json)
         }
 
-        let overlay: Overlay = try jsonDecoder.decode(Overlay.self, from: yamlContent)
+        let overlay: Overlay = try jsonDecoder.decode(Overlay.self, from: jsonContent)
+        let mappings: [OverlayMapping] = try overlay.roots.reduce([]) { prev, root in
+            switch root.type {
+            case .directory:
+                //iterate all contents
+                let dir = URL(fileURLWithPath: root.name)
+                let mappings: [OverlayMapping] = try root.contents.map { content in
+                    switch content.type {
+                    case .file:
+                        let virtual = dir.appendingPathComponent(content.name)
+                        let local = URL(fileURLWithPath: content.externalContents)
+                        return .init(virtual: virtual, local: local)
+                    case .directory:
+                        throw JsonOverlayReaderError.unsupportedFormat
+                    }
 
-        
-        return []
+                }
+                return prev + mappings
+            case .file:
+                throw JsonOverlayReaderError.unsupportedFormat
+            }
+        }
+
+        return mappings
     }
 
 }

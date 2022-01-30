@@ -20,14 +20,22 @@
 @testable import XCRemoteCache
 import XCTest
 
-class OverlayReaderTests: XCTestCase {
-    override func setUp() {
-
-    }
+class JsonOverlayReaderTests: XCTestCase {
+    private static let resourcesSubdirectory = "TestData/Dependencies/JsonOverlayReaderTests"
 
     func testParsingWithSuccess() throws {
-        let file = try XCTUnwrap(Bundle.module.url(forResource: "overlayReaderDefault", withExtension: "yaml", subdirectory: "TestData/Dependencies/YamlOverlayReaderTests"))
-        let reader = YamlOverlayReader(file, fileReader: FileManager.default)
+        let file = try pathForTestData(name: "overlayReaderDefault")
+        let reader = JsonOverlayReader(file, fileReader: FileManager.default)
         let mappings = try reader.provideMappings()
+
+        let expectedMappings = [
+            OverlayMapping(virtual: "/DerivedDataProducts/Target1.framework/Headers/Target1.h", local: "/Path/Target1/Target1.h"),
+            OverlayMapping(virtual: "/DerivedDataProducts/Target2.framework/Modules/module.modulemap", local: "/DerivedDataIntermediate/Target2.build/module.modulemap")
+        ]
+        XCTAssertEqual(Set(mappings), Set(expectedMappings))
+    }
+
+    private func pathForTestData(name: String) throws -> URL {
+        return try XCTUnwrap(Bundle.module.url(forResource: name, withExtension: "json", subdirectory: JsonOverlayReaderTests.resourcesSubdirectory))
     }
 }
