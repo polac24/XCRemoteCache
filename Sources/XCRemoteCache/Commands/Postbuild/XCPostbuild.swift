@@ -140,10 +140,22 @@ public class XCPostbuild {
             let fileReaderFactory: (URL) -> DependenciesReader = {
                 FileDependenciesReader($0, accessor: fileManager)
             }
-            let dependenciesReader = TargetDependenciesReader(
+            let rawDependenciesReader = TargetDependenciesReader(
                 context.compilationTempDir,
                 fileDependeciesReaderFactory: fileReaderFactory,
                 dirScanner: fileManager
+            )
+            // As the PostbuildContext assumes file format location and filename (`all-product-headers.yaml`)
+            // do not fail in case of a missing headers overlay file. In the future, all overlay files should be
+            // captured from the swiftc invocation similarly is stored in the `history.compile` for the consumer mode.
+            let overlayReader = JsonOverlayReader(
+                context.overlayHeadersPath,
+                mode: .bestEffort,
+                fileReader: fileManager
+            )
+            let dependenciesReader = OverlayDependenciesReader(
+                rawReader: rawDependenciesReader,
+                overlayReader: overlayReader
             )
             let dependencyProcessor = DependencyProcessorImpl(
                 xcode: context.xcodeDir,

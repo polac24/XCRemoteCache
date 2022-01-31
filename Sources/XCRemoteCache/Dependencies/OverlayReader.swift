@@ -40,6 +40,13 @@ protocol OverlayReader {
 
 class JsonOverlayReader: OverlayReader {
 
+    enum Mode {
+        /// Interrupts the operation if the representation file is missing
+        case strict
+        /// Assume empty overlay mapping if the file doesn't exist
+        case bestEffort
+    }
+
     private struct Overlay: Decodable {
         enum OverlayType: String, Decodable {
             case file
@@ -68,17 +75,25 @@ class JsonOverlayReader: OverlayReader {
 
     private lazy var jsonDecoder = JSONDecoder()
     private let json: URL
+    private let mode: Mode
     private let fileReader: FileReader
 
 
-    init(_ json: URL, fileReader: FileReader) {
+    init(_ json: URL, mode: Mode, fileReader: FileReader) {
         self.json = json
+        self.mode = mode
         self.fileReader = fileReader
     }
 
     func provideMappings() throws -> [OverlayMapping] {
         guard let jsonContent = try fileReader.contents(atPath: json.path) else {
-            throw JsonOverlayReaderError.missingSourceFile(json)
+            switch mode {
+            case .strict:
+                throw JsonOverlayReaderError.missingSourceFile(json)
+            case .bestEffort:
+                printWarning("overlay mapping file \(json) doesn't exist. Skipping overlay for the best-effort mode.")
+                return []
+            }
         }
 
         let overlay: Overlay = try jsonDecoder.decode(Overlay.self, from: jsonContent)

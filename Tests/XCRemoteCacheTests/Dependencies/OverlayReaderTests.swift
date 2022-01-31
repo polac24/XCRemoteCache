@@ -25,7 +25,7 @@ class JsonOverlayReaderTests: XCTestCase {
 
     func testParsingWithSuccess() throws {
         let file = try pathForTestData(name: "overlayReaderDefault")
-        let reader = JsonOverlayReader(file, fileReader: FileManager.default)
+        let reader = JsonOverlayReader(file, mode: .strict, fileReader: FileManager.default)
         let mappings = try reader.provideMappings()
 
         let expectedMappings = [
@@ -33,6 +33,22 @@ class JsonOverlayReaderTests: XCTestCase {
             OverlayMapping(virtual: "/DerivedDataProducts/Target2.framework/Modules/module.modulemap", local: "/DerivedDataIntermediate/Target2.build/module.modulemap")
         ]
         XCTAssertEqual(Set(mappings), Set(expectedMappings))
+    }
+
+    func testFailsWithMissingFileForStrictMode() throws {
+        let file: URL = "nonExiting"
+        let reader = JsonOverlayReader(file, mode: .strict, fileReader: FileManager.default)
+
+        XCTAssertThrowsError(try reader.provideMappings())
+    }
+
+    func testReturnsEmpptyMappingForMissingFileForBestEffortMode() throws {
+        let file: URL = "nonExiting"
+        let reader = JsonOverlayReader(file, mode: .bestEffort, fileReader: FileManager.default)
+
+        let mappings = try reader.provideMappings()
+
+        XCTAssertEqual(mappings, [])
     }
 
     private func pathForTestData(name: String) throws -> URL {
