@@ -27,15 +27,32 @@ enum OverlayDependenciesReaderError: Error {
 // Reader of target dependencies that replaces raw dependencies
 // according the virtual file system mappings
 class OverlayDependenciesReader: DependenciesReader {
+
+    enum MappingOrder {
+        case localToVirtual
+        case virtualToLocal
+    }
+
+    private let replacingKeys: (source: KeyPath<OverlayMapping, URL>, destination: KeyPath<OverlayMapping, URL>)
     // Underlying raw dependencies reader
     private let reader: DependenciesReader
     private let overlayReader: OverlayReader
     private var mappings: [OverlayMapping]?
 
 
-    init(rawReader: DependenciesReader, overlayReader: OverlayReader) {
+    init(
+        mode: MappingOrder,
+        rawReader: DependenciesReader,
+        overlayReader: OverlayReader
+    ) {
         reader = rawReader
         self.overlayReader = overlayReader
+        switch mode {
+        case .localToVirtual:
+            replacingKeys = (source: \.local, destination: \.virtual)
+        case .virtualToLocal:
+            replacingKeys = (source: \.virtual, destination: \.local)
+        }
     }
 
     // Warning: this function is not thread safe
@@ -49,11 +66,11 @@ class OverlayDependenciesReader: DependenciesReader {
     }
 
     private func mapPath(_ path: String) throws -> String {
-        guard let mapping = try getMappings().first(where: { $0.local.path == path }) else {
+        guard let mapping = try getMappings().first(where: { $0[replacingKeys.source].path == path }) else {
             // no mapping found
             return path
         }
-        return mapping.virtual.path
+        return mapping[replacingKeys.destination].path
     }
 
     private func mapPaths(_ paths: [String]) throws -> [String] {

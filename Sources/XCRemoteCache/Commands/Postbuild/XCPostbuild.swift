@@ -154,6 +154,7 @@ public class XCPostbuild {
                 fileReader: fileManager
             )
             let dependenciesReader = OverlayDependenciesReader(
+                mode: .localToVirtual,
                 rawReader: rawDependenciesReader,
                 overlayReader: overlayReader
             )
