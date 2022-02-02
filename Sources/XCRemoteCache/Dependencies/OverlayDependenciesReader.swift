@@ -19,11 +19,6 @@
 
 import Foundation
 
-enum OverlayDependenciesReaderError: Error {
-    // TODO: comment
-    case overlayDuplication(String)
-}
-
 // Reader of target dependencies that replaces raw dependencies
 // according the virtual file system mappings
 class OverlayDependenciesReader: DependenciesReader {
@@ -65,12 +60,14 @@ class OverlayDependenciesReader: DependenciesReader {
         return readMappings
     }
 
+    // Warning: this function is not thread safe
     private func mapPath(_ path: String) throws -> String {
-        guard let mapping = try getMappings().first(where: { $0[replacingKeys.source].path == path }) else {
-            // no mapping found
+        guard let mapping = try getMappings().first(where: { $0[keyPath: replacingKeys.source].path == path }) else {
+            // TODO: support partial mappings, where a directory path can be replaced with some other directory
+            // no direct mapping found
             return path
         }
-        return mapping[replacingKeys.destination].path
+        return mapping[keyPath: replacingKeys.destination].path
     }
 
     private func mapPaths(_ paths: [String]) throws -> [String] {
@@ -90,13 +87,11 @@ class OverlayDependenciesReader: DependenciesReader {
     func readFilesAndDependencies() throws -> [String: [String]] {
         let readFilesAndDependencies = try reader.readFilesAndDependencies()
         return try readFilesAndDependencies.reduce([:]) { (partialResult, arg1) in
-            let (key, value) = arg1
+            let (file, dependencies) = arg1
             var result = partialResult
-            let newKey = try mapPath(key)
-            guard result[newKey] == nil else {
-                throw OverlayDependenciesReaderError.overlayDuplication(key)
-            }
-            result[newKey] = try mapPaths(value)
+            let newKey = try mapPath(file)
+            let previousDeps = result[newKey] ?? []
+            result[newKey] = try Set(mapPaths(dependencies) + previousDeps).sorted()
             return result
         }
     }
