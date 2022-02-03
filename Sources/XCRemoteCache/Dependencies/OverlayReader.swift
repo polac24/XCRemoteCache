@@ -30,7 +30,7 @@ enum JsonOverlayReaderError: Error {
     case missingSourceFile(URL)
     /// The file exists but its content is invalid
     case invalidSourceContent(URL)
-    /// the y
+    /// the overlay format is not supported - either contains a nested directory or a single file 
     case unsupportedFormat
 }
 /// Provides virtual file system overlay mappings

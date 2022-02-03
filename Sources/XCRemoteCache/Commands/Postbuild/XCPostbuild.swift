@@ -140,7 +140,7 @@ public class XCPostbuild {
             let fileReaderFactory: (URL) -> DependenciesReader = {
                 FileDependenciesReader($0, accessor: fileManager)
             }
-            let rawDependenciesReader = TargetDependenciesReader(
+            let dependenciesReader = TargetDependenciesReader(
                 context.compilationTempDir,
                 fileDependeciesReaderFactory: fileReaderFactory,
                 dirScanner: fileManager
@@ -153,11 +153,11 @@ public class XCPostbuild {
                 mode: .bestEffort,
                 fileReader: fileManager
             )
-            let dependenciesReader = OverlayDependenciesReader(
-                mode: .localToVirtual,
-                rawReader: rawDependenciesReader,
+            let overlayRemapper = try OverlayPathsRemapper(
                 overlayReader: overlayReader
             )
+            // TODO: implement composition
+//            let remapper = ComposePathsRemapper(overlayRemapper, remapper)
             let dependencyProcessor = DependencyProcessorImpl(
                 xcode: context.xcodeDir,
                 product: context.productsDir,
