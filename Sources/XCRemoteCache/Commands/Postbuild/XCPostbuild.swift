@@ -66,7 +66,7 @@ public class XCPostbuild {
             // Initialize dependencies
             let primaryGitBranch = GitBranch(repoLocation: config.primaryRepo, branch: config.primaryBranch)
             let gitClient = GitClientImpl(repoRoot: config.repoRoot, primary: primaryGitBranch, shell: shellGetStdout)
-            let pathRemapper = try StringDependenciesRemapperFactory().build(
+            let envsRemapper = try StringDependenciesRemapperFactory().build(
                 orderKeys: DependenciesMapping.rewrittenEnvs,
                 envs: env,
                 customMappings: config.outOfBandMappings
@@ -153,11 +153,10 @@ public class XCPostbuild {
                 mode: .bestEffort,
                 fileReader: fileManager
             )
-            let overlayRemapper = try OverlayPathsRemapper(
+            let overlayRemapper = try OverlayDependenciesRemapper(
                 overlayReader: overlayReader
             )
-            // TODO: implement composition
-//            let remapper = ComposePathsRemapper(overlayRemapper, remapper)
+            let pathsRemapper = DependenciesRemapperComposite([overlayRemapper, envsRemapper])
             let dependencyProcessor = DependencyProcessorImpl(
                 xcode: context.xcodeDir,
                 product: context.productsDir,
@@ -235,7 +234,7 @@ public class XCPostbuild {
             let postbuildAction = Postbuild(
                 context: context,
                 networkClient: remoteNetworkClient,
-                remapper: pathRemapper,
+                remapper: pathsRemapper,
                 fingerprintAccumulator: fingerprintGenerator,
                 artifactsOrganizer: organizer,
                 artifactCreator: artifactCreator,

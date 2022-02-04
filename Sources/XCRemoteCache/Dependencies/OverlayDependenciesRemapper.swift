@@ -21,7 +21,7 @@ import Foundation
 
 /// File paths remapper according the virtual file system mappings
 /// Warning: this class is not thread safe
-class OverlayPathsRemapper: DependenciesRemapper {
+class OverlayDependenciesRemapper: DependenciesRemapper {
     private var mappings: [OverlayMapping]
 
     init(overlayReader: OverlayReader) throws {
@@ -42,14 +42,14 @@ class OverlayPathsRemapper: DependenciesRemapper {
     }
 
     func replace(genericPaths: [String]) -> [String] {
-        genericPaths.map {
+        Set(genericPaths.map {
             mapPath($0, source: \.virtual, destination: \.local)
-        }
+        }).sorted()
     }
 
     func replace(localPaths: [String]) -> [String] {
-        localPaths.map {
+        Set(localPaths.map {
             mapPath($0, source: \.local, destination: \.virtual)
-        }
+        }).sorted()
     }
 }

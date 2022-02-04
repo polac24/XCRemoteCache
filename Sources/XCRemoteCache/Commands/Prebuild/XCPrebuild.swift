@@ -115,7 +115,7 @@ public class XCPrebuild {
             )
             let client: NetworkClient = config.disableHttpCache ? networkClient : cacheNetworkClient
             let remoteNetworkClient = RemoteNetworkClientImpl(client, urlBuilder)
-            let pathRemapper = try StringDependenciesRemapperFactory().build(
+            let envsRemapper = try StringDependenciesRemapperFactory().build(
                 orderKeys: DependenciesMapping.rewrittenEnvs,
                 envs: env,
                 customMappings: config.outOfBandMappings
@@ -128,11 +128,10 @@ public class XCPrebuild {
                 mode: .bestEffort,
                 fileReader: fileManager
             )
-            let overlayRemapper = try OverlayPathsRemapper(
+            let overlayRemapper = try OverlayDependenciesRemapper(
                 overlayReader: overlayReader
             )
-            // TODO: implement composition
-//            let remapper = ComposePathsRemapper(pathRemapper, overlayRemapper)
+            let pathsRemapper = DependenciesRemapperComposite([envsRemapper, overlayRemapper])
             let filesFingerprintGenerator = FingerprintAccumulatorImpl(
                 algorithm: MD5Algorithm(),
                 fileManager: fileManager
@@ -168,7 +167,7 @@ public class XCPrebuild {
             let prebuildAction = Prebuild(
                 context: context,
                 networkClient: remoteNetworkClient,
-                remapper: pathRemapper,
+                remapper: pathsRemapper,
                 fingerprintAccumulator: fingerprintGenerator,
                 artifactsOrganizer: organizer,
                 globalCacheSwitcher: globalCacheSwitcher,
