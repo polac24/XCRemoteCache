@@ -131,7 +131,7 @@ public class XCPrebuild {
             let overlayRemapper = try OverlayDependenciesRemapper(
                 overlayReader: overlayReader
             )
-            let pathsRemapper = DependenciesRemapperComposite([envsRemapper, overlayRemapper])
+            let pathRemapper = DependenciesRemapperComposite([overlayRemapper, envsRemapper])
             let filesFingerprintGenerator = FingerprintAccumulatorImpl(
                 algorithm: MD5Algorithm(),
                 fileManager: fileManager
@@ -167,7 +167,7 @@ public class XCPrebuild {
             let prebuildAction = Prebuild(
                 context: context,
                 networkClient: remoteNetworkClient,
-                remapper: pathsRemapper,
+                remapper: pathRemapper,
                 fingerprintAccumulator: fingerprintGenerator,
                 artifactsOrganizer: organizer,
                 globalCacheSwitcher: globalCacheSwitcher,

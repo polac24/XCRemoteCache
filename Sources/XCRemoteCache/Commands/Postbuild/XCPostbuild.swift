@@ -156,7 +156,7 @@ public class XCPostbuild {
             let overlayRemapper = try OverlayDependenciesRemapper(
                 overlayReader: overlayReader
             )
-            let pathsRemapper = DependenciesRemapperComposite([overlayRemapper, envsRemapper])
+            let pathRemapper = DependenciesRemapperComposite([overlayRemapper, envsRemapper])
             let dependencyProcessor = DependencyProcessorImpl(
                 xcode: context.xcodeDir,
                 product: context.productsDir,
@@ -234,7 +234,7 @@ public class XCPostbuild {
             let postbuildAction = Postbuild(
                 context: context,
                 networkClient: remoteNetworkClient,
-                remapper: pathsRemapper,
+                remapper: pathRemapper,
                 fingerprintAccumulator: fingerprintGenerator,
                 artifactsOrganizer: organizer,
                 artifactCreator: artifactCreator,
