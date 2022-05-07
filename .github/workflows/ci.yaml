@@ -39,22 +39,8 @@ jobs:
           fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
       - name: Select Xcode
         run: "sudo xcode-select -s /Applications/Xcode_$XCODE_VERSION.app"
-      - name: Configure git
-        run: |
-          git config --local user.email "xcremotecache-bot@spotify.com"
-          git config --local user.name "XCRemoteCache documentation[bot]"
       - name: "Generate documentation"
         run: "swift package --allow-writing-to-directory ./docs  generate-documentation --target XCRemoteCache --disable-indexing --transform-for-static-hosting --output-path ./docs  --hosting-base-path XCRemoteCache/"
-      - name: "Add ./docs to git"
-        run: "git add docs"
-      - name: "Commit new docs"
-        run: "git commit -m \"Update documentation\""
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: refs/heads/documentation
-          force: true
       - name: Deploy GH-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
