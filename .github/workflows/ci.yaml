@@ -54,6 +54,6 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: documentation
+          branch: refs/heads/documentation
       # - name: "Push to the 'documentation' branch"
       #   run: "git push --force origin $(git rev-parse --abbrev-ref HEAD):documentation"
