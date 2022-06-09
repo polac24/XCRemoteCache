@@ -44,7 +44,7 @@ class PrebuildTests: FileXCTestCase {
         metaContent = try generateMeta(fingerprint: "")
         generator = FingerprintGenerator(
             envFingerprint: "",
-            FingerprintAccumulatorImpl(algorithm: MD5Algorithm(), fileManager: .default),
+            FingerprintAccumulatorImpl(algorithm: MD5Algorithm(), fileReader: FileManager.default),
             algorithm: MD5Algorithm()
         )
         remoteCacheURL = try XCTUnwrap(URL(string: "https://example.com"))

@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Spotify AB.
+// Copyright (c) 2021 Spotify AB.
 //
 // Licensed to the Apache Software Foundation (ASF) under one
 // or more contributor license agreements.  See the NOTICE file
@@ -19,17 +19,18 @@
 
 import Foundation
 
+/// Builds the FingerprintGenerator based on only appended contetn (without any context variables like ENVs
+/// or current commit sha)
+class ContextAgnosticFingerprintGeneratorFactory {
+    private let fileManager: FileManager
 
-/// Performs a pre/postprocessing on an artifact package
-/// Coule be a place for file reorganization (to support legacy package formats) and/or
-/// remapp absolute paths in some package files
-protocol ArtifactProcessor {
-    /// Processes a raw artifact in a directory. Raw artifact is a format of an artifact
-    /// that is stored in a remote cache server (generic)
-    /// - Parameter rawArtifact: directory that contains raw artifact content
-    func process(rawArtifact: URL) throws
+    init(fileManager: FileManager) {
+        self.fileManager = fileManager
+    }
 
-    /// Processes a local artifact in a directory
-    /// - Parameter localArtifact: directory that contains local (machine-specific) artifact content
-    func process(localArtifact: URL) throws
+    /// Builds the default fingerprint generator that uses md5 as a hashing algorithm
+    func build() -> FingerprintGenerator {
+        let accumulator = FingerprintAccumulatorImpl(algorithm: MD5Algorithm(), fileReader: fileManager)
+        return FingerprintGenerator(envFingerprint: "", accumulator, algorithm: MD5Algorithm())
+    }
 }

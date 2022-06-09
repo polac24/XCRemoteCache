@@ -22,11 +22,11 @@ import Foundation
 /// Generates content fingerprint from input Strings and local file contents
 public class FingerprintAccumulatorImpl: FingerprintAccumulator {
     private let algorithm: HashingAlgorithm
-    private let fileManager: FileManager
+    private let fileReader: FileReader
 
-    init(algorithm: HashingAlgorithm, fileManager: FileManager) {
+    init(algorithm: HashingAlgorithm, fileReader: FileReader) {
         self.algorithm = algorithm
-        self.fileManager = fileManager
+        self.fileReader = fileReader
     }
 
     public func reset() {
@@ -39,7 +39,7 @@ public class FingerprintAccumulatorImpl: FingerprintAccumulator {
 
     public func append(_ content: URL) throws {
         // TODO: consider reading file in chunks if content file is huge
-        guard let data = fileManager.contents(atPath: content.path) else {
+        guard let data = try fileReader.contents(atPath: content.path) else {
             throw FingerprintAccumulatorError.missingFile(content)
         }
         algorithm.add(data)
