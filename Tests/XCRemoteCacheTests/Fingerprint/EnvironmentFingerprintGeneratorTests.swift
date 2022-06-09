@@ -49,7 +49,7 @@ class EnvironmentFingerprintGeneratorTests: XCTestCase {
     override func setUp() {
         super.setUp()
         config = XCRemoteCacheConfig(sourceRoot: "")
-        generatorFake = FingerprintAccumulatorFake()
+        generatorFake = FingerprintAccumulatorFake(FileManagerFake())
         fingerprintGenerator = EnvironmentFingerprintGenerator(
             configuration: config,
             env: Self.defaultENV,

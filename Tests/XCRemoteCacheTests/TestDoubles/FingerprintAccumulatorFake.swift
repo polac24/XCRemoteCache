@@ -22,6 +22,11 @@ import Foundation
 
 class FingerprintAccumulatorFake: FingerprintAccumulator {
     private var appendedStrings: [String] = []
+    private let fileReader: FileReader
+
+    init(_ fileReader: FileReader) {
+        self.fileReader = fileReader
+    }
     func append(_ content: String) throws {
         appendedStrings.append(content)
     }
@@ -31,7 +36,15 @@ class FingerprintAccumulatorFake: FingerprintAccumulator {
     }
 
     func append(_ file: URL) throws {
-        appendedStrings.append("FILE{\(file.path)}")
+        guard let content = try fileReader.contents(atPath: file.path) else {
+            // do not append anything - empty file
+            return
+        }
+        guard let contentString = String(data: content, encoding: .utf8) else {
+            // non-string file
+            return
+        }
+        appendedStrings.append(contentString)
     }
 
     private(set) var generateCallsCount = 0

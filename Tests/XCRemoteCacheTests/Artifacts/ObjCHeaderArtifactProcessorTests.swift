@@ -21,19 +21,30 @@
 
 import XCTest
 
-class UnzippedArtifactProcessorTests: FileXCTestCase {
+class ObjCHeaderArtifactProcessorTests: FileXCTestCase {
 
     private let fileAccessor = FileAccessorFake(mode: .strict)
     private let remapper = StringDependenciesRemapper(mappings: [.init(generic: "$(SRCROOT)", local: "/local")])
     private var fileRemapper: FileDependenciesRemapper!
-    private var processor: UnzippedArtifactProcessor!
+    private var processor: ObjCHeaderArtifactProcessor!
+    // md5 hash of "Some $(SRCROOT)"
+    private let someSrcRootMd5Data = "55654c89b180824387beb8a9794264bf".data(using: .utf8)
 
     override func setUp() {
         super.setUp()
         fileRemapper = TextFileDependenciesRemapper(remapper: remapper, fileAccessor: fileAccessor)
-        processor = UnzippedArtifactProcessor(
+
+        let fingerprintGenerator = FingerprintGenerator(
+            envFingerprint: "",
+            FingerprintAccumulatorImpl(algorithm: MD5Algorithm(), fileReader: fileAccessor),
+            algorithm: MD5Algorithm()
+        )
+        processor = ObjCHeaderArtifactProcessor(
+            overrideExtension: "md5",
             fileRemapper: fileRemapper,
-            dirScanner: fileAccessor
+            dirScanner: fileAccessor,
+            fileWriter: fileAccessor,
+            fingerprintGeneratorFactory: { fingerprintGenerator }
         )
     }
 
@@ -67,5 +78,21 @@ class UnzippedArtifactProcessorTests: FileXCTestCase {
         try processor.process(rawArtifact: "/artifact")
 
         XCTAssertEqual(try fileAccessor.contents(atPath: "/artifact/include/.hidden"), "Some $(SRCROOT)")
+    }
+
+    func testGeneratesOverrideFileBeforeRemappingToLocalPaths() throws {
+        try fileAccessor.write(toPath: "/artifact/include/Module-Swift.h", contents: "Some $(SRCROOT)")
+
+        try processor.process(rawArtifact: "/artifact")
+
+        XCTAssertEqual(try fileAccessor.contents(atPath: "/artifact/include/Module-Swift.h.md5"), someSrcRootMd5Data)
+    }
+
+    func testGeneratesOverrideFileFromRemappedLocalFile() throws {
+        try fileAccessor.write(toPath: "/artifact/include/Module-Swift.h", contents: "Some /local")
+
+        try processor.process(localArtifact: "/artifact")
+
+        XCTAssertEqual(try fileAccessor.contents(atPath: "/artifact/include/Module-Swift.h.md5"), someSrcRootMd5Data)
     }
 }

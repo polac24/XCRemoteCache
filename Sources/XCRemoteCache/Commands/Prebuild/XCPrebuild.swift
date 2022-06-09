@@ -86,7 +86,7 @@ public class XCPrebuild {
             let envFingerprint = try EnvironmentFingerprintGenerator(
                 configuration: config,
                 env: env,
-                generator: FingerprintAccumulatorImpl(algorithm: MD5Algorithm(), fileManager: fileManager)
+                generator: FingerprintAccumulatorImpl(algorithm: MD5Algorithm(), fileReader: fileManager)
             ).generateFingerprint()
             let urlBuilder = try URLBuilderImpl(
                 address: context.recommendedCacheAddress,
@@ -145,7 +145,7 @@ public class XCPrebuild {
             let pathRemapper = DependenciesRemapperComposite(remappers)
             let filesFingerprintGenerator = FingerprintAccumulatorImpl(
                 algorithm: MD5Algorithm(),
-                fileManager: fileManager
+                fileReader: fileManager
             )
             let fingerprintGenerator = FingerprintGenerator(
                 envFingerprint: envFingerprint,
@@ -156,7 +156,13 @@ public class XCPrebuild {
                 remapper: envsRemapper,
                 fileAccessor: fileManager
             )
-            let artifactProcessor = UnzippedArtifactProcessor(fileRemapper: fileRemapper, dirScanner: fileManager)
+            let artifactProcessor = ObjCHeaderArtifactProcessor(
+                overrideExtension: config.fingerprintOverrideExtension,
+                fileRemapper: fileRemapper,
+                dirScanner: fileManager,
+                fileWriter: fileManager,
+                fingerprintGeneratorFactory: ContextAgnosticFingerprintGeneratorFactory(fileManager: fileManager).build
+            )
             let organizer = ZipArtifactOrganizer(
                 targetTempDir: context.targetTempDir,
                 artifactProcessors: [artifactProcessor],

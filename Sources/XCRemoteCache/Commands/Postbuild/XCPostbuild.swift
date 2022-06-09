@@ -76,11 +76,11 @@ public class XCPostbuild {
             let envFingerprint = try EnvironmentFingerprintGenerator(
                 configuration: config,
                 env: env,
-                generator: FingerprintAccumulatorImpl(algorithm: MD5Algorithm(), fileManager: fileManager)
+                generator: FingerprintAccumulatorImpl(algorithm: MD5Algorithm(), fileReader: fileManager)
             ).generateFingerprint()
             let fingerprintFilesGenerator = FingerprintAccumulatorImpl(
                 algorithm: MD5Algorithm(),
-                fileManager: fileManager
+                fileReader: fileManager
             )
             let fingerprintGenerator = FingerprintGenerator(
                 envFingerprint: envFingerprint,
@@ -103,7 +103,13 @@ public class XCPostbuild {
                 modulesFolderPath: context.modulesFolderPath,
                 dSYMPath: context.dSYMPath,
                 metaWriter: metaWriter,
-                artifactProcessor: UnzippedArtifactProcessor(fileRemapper: fileRemapper, dirScanner: fileManager),
+                artifactProcessor: ObjCHeaderArtifactProcessor(
+                    overrideExtension: config.fingerprintOverrideExtension,
+                    fileRemapper: fileRemapper,
+                    dirScanner: fileManager,
+                    fileWriter: fileManager,
+                    fingerprintGeneratorFactory: ContextAgnosticFingerprintGeneratorFactory(fileManager: fileManager).build
+                ),
                 fileManager: fileManager
             )
             let dirAccessor = DirAccessorComposer(

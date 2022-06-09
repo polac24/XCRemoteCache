@@ -65,7 +65,7 @@ class PostbuildTests: FileXCTestCase {
     private var remapper = DependenciesRemapperFake(baseURL: URL(fileURLWithPath: ""))
     private var fingerprintGenerator = FingerprintGenerator(
         envFingerprint: "",
-        FingerprintAccumulatorFake(),
+        FingerprintAccumulatorFake(FileManagerFake()),
         algorithm: MD5Algorithm()
     )
     private var organizer: ArtifactOrganizer!
@@ -112,8 +112,10 @@ class PostbuildTests: FileXCTestCase {
     }
 
     func testDependencyFileIsConsideredInFingerprintGeneration() throws {
-        dependenciesReader = DependenciesReaderFake(dependencies: ["deps": ["file.c"]])
-        let accumulator = FingerprintAccumulatorFake()
+        let fileAccessor = FileAccessorFake(mode: .strict)
+        try fileAccessor.write(toPath: "/file.c", contents: Data([1,2]))
+        dependenciesReader = DependenciesReaderFake(dependencies: ["deps": ["/file.c"]])
+        let accumulator = FingerprintAccumulatorFake(fileAccessor)
         fingerprintGenerator = FingerprintGenerator(envFingerprint: "", accumulator, algorithm: MD5Algorithm())
         let startingAccumulatorState = try accumulator.generate()
 
@@ -143,7 +145,7 @@ class PostbuildTests: FileXCTestCase {
 
     func testDependencyFileWithMissingFileIsNotConsideredInFingerprintGeneration() throws {
         dependenciesReader = DependenciesReaderFake(dependencies: ["deps": ["file.c"]])
-        let accumulator = FingerprintAccumulatorImpl(algorithm: MD5Algorithm(), fileManager: FileManagerFake())
+        let accumulator = FingerprintAccumulatorImpl(algorithm: MD5Algorithm(), fileReader: FileManagerFake())
         fingerprintGenerator = FingerprintGenerator(envFingerprint: "", accumulator, algorithm: MD5Algorithm())
         let startingAccumulatorState = try accumulator.generate()
 
