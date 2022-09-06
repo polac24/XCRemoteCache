@@ -156,12 +156,13 @@ public class XCPrebuild {
                 remapper: envsRemapper,
                 fileAccessor: fileManager
             )
+            let lightweightFingerprintGenerator = ContextAgnosticFingerprintGeneratorFactory(fileReader: fileManager)
             let artifactProcessor = ObjCHeaderArtifactProcessor(
                 overrideExtension: config.fingerprintOverrideExtension,
                 fileRemapper: fileRemapper,
                 dirScanner: fileManager,
                 fileWriter: fileManager,
-                fingerprintGeneratorFactory: ContextAgnosticFingerprintGeneratorFactory(fileManager: fileManager).build
+                fingerprintGeneratorFactory: lightweightFingerprintGenerator.build
             )
             let organizer = ZipArtifactOrganizer(
                 targetTempDir: context.targetTempDir,

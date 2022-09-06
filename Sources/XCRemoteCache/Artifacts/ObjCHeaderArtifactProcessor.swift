@@ -20,7 +20,10 @@
 import Foundation
 
 /// Processes downloaded artifact by replacing generic paths in generated ObjC headers placed in ./include
-/// and  creating an override file with an fingerprint of the generic content
+/// and creates an override file with a fingerprint generated out of the generic content
+/// Note: the generated ObjC header may contain some absolute paths (e.g. when ObjC-defined NS_ENUM is
+/// used in the Swift API). To avoid lower hit rate, the fingerprint override (defaults to xxx.md5 file) should be
+/// computed as a hash of the -Swift.h content before replacing placeholders with absolute paths
 class ObjCHeaderArtifactProcessor: ArtifactProcessor {
     /// All directories in an artifact that should be processed by path remapping
     private static let remappingDirs = ["include"]
@@ -45,22 +48,23 @@ class ObjCHeaderArtifactProcessor: ArtifactProcessor {
         self.fingerprintGeneratorFactory = fingerprintGeneratorFactory
     }
 
-    private func findProcessingEligableFiles(path: String) throws -> [URL] {
+    private func findProcessingEligibleFiles(path: String) throws -> [URL] {
         let remappingURL = URL(fileURLWithPath: path)
         let allFiles = try dirScanner.recursiveItems(at: remappingURL)
         return allFiles.filter({ !$0.isHidden })
     }
 
-    /// Replaces all generic paths in a raw artifact's `include` dir with
-    /// absolute paths, specific for a given machine and configuration
+    /// Generates path-agnostic overrides and replaces all generic paths
+    /// in a raw artifact's `include` dir files with absolute paths, specific
+    /// for a given machine and configuration
     /// - Parameter rawArtifact: raw artifact location
     func process(rawArtifact url: URL) throws {
         for remappingDir in Self.remappingDirs {
             let remappingPath = url.appendingPathComponent(remappingDir).path
-            let allFiles = try findProcessingEligableFiles(path: remappingPath)
+            let allFiles = try findProcessingEligibleFiles(path: remappingPath)
             for file in allFiles {
                 // first create an override file that hashes the generic content of a file (before remapping)
-                try generateOverride(genericFile: file)
+                try generateOverrideFile(genericFile: file)
                 try allFiles.forEach(fileRemapper.remap(fromGeneric:))
             }
         }
@@ -69,16 +73,16 @@ class ObjCHeaderArtifactProcessor: ArtifactProcessor {
     func process(localArtifact url: URL) throws {
         for remappingDir in Self.remappingDirs {
             let remappingPath = url.appendingPathComponent(remappingDir).path
-            let allFiles = try findProcessingEligableFiles(path: remappingPath)
+            let allFiles = try findProcessingEligibleFiles(path: remappingPath)
             for file in allFiles {
                 try fileRemapper.remap(fromLocal: file)
                 // create an override file from the generic content of a file (after remapping)
-                try generateOverride(genericFile: file)
+                try generateOverrideFile(genericFile: file)
             }
         }
     }
 
-    private func generateOverride(genericFile: URL) throws {
+    private func generateOverrideFile(genericFile: URL) throws {
         let fingerprintGenerator = fingerprintGeneratorFactory()
         try fingerprintGenerator.append(genericFile)
         let fingerprint: RawFingerprint = try fingerprintGenerator.generate()

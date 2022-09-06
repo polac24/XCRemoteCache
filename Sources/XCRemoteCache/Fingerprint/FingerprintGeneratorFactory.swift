@@ -19,18 +19,20 @@
 
 import Foundation
 
-/// Builds the FingerprintGenerator based on only appended contetn (without any context variables like ENVs
-/// or current commit sha)
+/// Lightweight fingerprint generator that creates a hash based on only the appended content
+/// (without any context variables like ENVs or current commit sha). It is used in cases when
+/// full context is not required (e.g. generating -Swift.h override)
 class ContextAgnosticFingerprintGeneratorFactory {
-    private let fileManager: FileManager
+    private let fileReader: FileReader
+    private let algorithm: HashingAlgorithm = MD5Algorithm()
 
-    init(fileManager: FileManager) {
-        self.fileManager = fileManager
+    init(fileReader: FileReader) {
+        self.fileReader = fileReader
     }
 
     /// Builds the default fingerprint generator that uses md5 as a hashing algorithm
     func build() -> FingerprintGenerator {
-        let accumulator = FingerprintAccumulatorImpl(algorithm: MD5Algorithm(), fileReader: fileManager)
-        return FingerprintGenerator(envFingerprint: "", accumulator, algorithm: MD5Algorithm())
+        let accumulator = FingerprintAccumulatorImpl(algorithm: algorithm, fileReader: fileReader)
+        return FingerprintGenerator(envFingerprint: "", accumulator, algorithm: algorithm)
     }
 }

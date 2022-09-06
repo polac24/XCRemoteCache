@@ -95,6 +95,7 @@ public class XCPostbuild {
             )
             let metaWriter = JsonMetaWriter(fileWriter: fileManager, pretty: config.prettifyMetaFiles)
             let fileRemapper = TextFileDependenciesRemapper(remapper: envsRemapper, fileAccessor: fileManager)
+            let lightweightFingerprintGenerator = ContextAgnosticFingerprintGeneratorFactory(fileReader: fileManager)
             let artifactCreator = BuildArtifactCreator(
                 buildDir: context.productsDir,
                 tempDir: context.targetTempDir,
@@ -108,7 +109,7 @@ public class XCPostbuild {
                     fileRemapper: fileRemapper,
                     dirScanner: fileManager,
                     fileWriter: fileManager,
-                    fingerprintGeneratorFactory: ContextAgnosticFingerprintGeneratorFactory(fileManager: fileManager).build
+                    fingerprintGeneratorFactory: lightweightFingerprintGenerator.build
                 ),
                 fileManager: fileManager
             )

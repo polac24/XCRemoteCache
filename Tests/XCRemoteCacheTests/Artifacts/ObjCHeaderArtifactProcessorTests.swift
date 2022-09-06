@@ -34,17 +34,13 @@ class ObjCHeaderArtifactProcessorTests: FileXCTestCase {
         super.setUp()
         fileRemapper = TextFileDependenciesRemapper(remapper: remapper, fileAccessor: fileAccessor)
 
-        let fingerprintGenerator = FingerprintGenerator(
-            envFingerprint: "",
-            FingerprintAccumulatorImpl(algorithm: MD5Algorithm(), fileReader: fileAccessor),
-            algorithm: MD5Algorithm()
-        )
+        let fingerprintGenerator = ContextAgnosticFingerprintGeneratorFactory(fileReader: fileAccessor)
         processor = ObjCHeaderArtifactProcessor(
             overrideExtension: "md5",
             fileRemapper: fileRemapper,
             dirScanner: fileAccessor,
             fileWriter: fileAccessor,
-            fingerprintGeneratorFactory: { fingerprintGenerator }
+            fingerprintGeneratorFactory: fingerprintGenerator.build
         )
     }
 
