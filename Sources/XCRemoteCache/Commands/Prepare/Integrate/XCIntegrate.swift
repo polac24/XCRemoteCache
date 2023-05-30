@@ -88,7 +88,8 @@ public class XCIntegrate {
                 env: env,
                 binariesDir: binariesDir,
                 fakeSrcRoot: fakeSrcRoot,
-                outputPath: output
+                outputPath: output,
+                useDriverIntegration: config.enableSwifDriverIntegration
             )
             let configurationOracle = IncludeExcludeOracle(
                 excludes: configurationsExclude.integrateArrayArguments,
@@ -98,9 +99,10 @@ public class XCIntegrate {
                 excludes: targetsExclude.integrateArrayArguments,
                 includes: targetsInclude.integrateArrayArguments
             )
-            let buildSettingsAppenderOptions: BuildSettingsIntegrateAppenderOption = [
-                .disableSwiftDriverIntegration,
-            ]
+            var buildSettingsAppenderOptions: BuildSettingsIntegrateAppenderOption = []
+            if !config.enableSwifDriverIntegration {
+                buildSettingsAppenderOptions.insert(.disableSwiftDriverIntegration)
+            }
             let buildSettingsAppender = XcodeProjBuildSettingsIntegrateAppender(
                 mode: context.mode,
                 repoRoot: context.repoRoot,
