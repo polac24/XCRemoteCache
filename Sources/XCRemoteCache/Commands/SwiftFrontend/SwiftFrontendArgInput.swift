@@ -19,7 +19,7 @@
 
 import Foundation
 
-enum SwiftFrontendArgInputError: Error {
+enum SwiftFrontendArgInputError: Error, Equatable {
     // swift-frontend should either be compling or emiting a module
     case bothCompilationAndEmitAction
     // no .swift files have been passed as input files
@@ -101,7 +101,6 @@ public struct SwiftFrontendArgInput {
         target: String,
         moduleName: String
     ) throws -> SwiftcContext {
-        let inputPathsCount = inputPaths.count
         let primaryInputsCount = primaryInputPaths.count
 
         guard primaryInputsCount > 0 else {
@@ -109,19 +108,19 @@ public struct SwiftFrontendArgInput {
         }
         guard [primaryInputsCount, 0].contains(dependenciesPaths.count) else {
             throw SwiftFrontendArgInputError.dependenciesOuputCountDoesntMatch(
-                expected: inputPathsCount,
+                expected: primaryInputsCount,
                 parsed: dependenciesPaths.count
             )
         }
         guard [primaryInputsCount, 0].contains(diagnosticsPaths.count) else {
             throw SwiftFrontendArgInputError.diagnosticsOuputCountDoesntMatch(
-                expected: inputPathsCount,
+                expected: primaryInputsCount,
                 parsed: diagnosticsPaths.count
             )
         }
         guard outputPaths.count == primaryInputsCount else {
             throw SwiftFrontendArgInputError.outputsOuputCountDoesntMatch(
-                expected: inputPathsCount,
+                expected: primaryInputsCount,
                 parsed: outputPaths.count
             )
         }
@@ -192,17 +191,13 @@ public struct SwiftFrontendArgInput {
                 parsed: dependenciesPaths.count
             )
         }
-        guard diagnosticsPaths.count <= 1 else {
-            throw SwiftFrontendArgInputError.emitModuleDiagnosticsOuputCountIsHigherThan1(
-                parsed: diagnosticsPaths.count
-            )
-        }
+
         let steps: SwiftcContext.SwiftcSteps = SwiftcContext.SwiftcSteps(
             compileFilesScope: .none,
             emitModule: SwiftcContext.SwiftcStepEmitModule(
                 objcHeaderOutput: URL(fileURLWithPath: objcHeaderOutput),
                 modulePathOutput: URL(fileURLWithPath: outputPaths[0]),
-                dependencies: URL(fileURLWithPath: dependenciesPaths[0])
+                dependencies: dependenciesPaths.first.map(URL.init(fileURLWithPath:))
             )
         )
         return try .init(

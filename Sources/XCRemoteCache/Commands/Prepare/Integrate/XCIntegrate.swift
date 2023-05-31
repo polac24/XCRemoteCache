@@ -82,14 +82,12 @@ public class XCIntegrate {
 
             let context = try IntegrateContext(
                 input: projectPath,
-                repoRootPath: config.repoRoot,
+                config: config,
                 mode: mode,
-                configOverridePath: config.extraConfigurationFile,
                 env: env,
                 binariesDir: binariesDir,
                 fakeSrcRoot: fakeSrcRoot,
-                outputPath: output,
-                useDriverIntegration: config.enableSwifDriverIntegration
+                outputPath: output
             )
             let configurationOracle = IncludeExcludeOracle(
                 excludes: configurationsExclude.integrateArrayArguments,
@@ -99,16 +97,12 @@ public class XCIntegrate {
                 excludes: targetsExclude.integrateArrayArguments,
                 includes: targetsInclude.integrateArrayArguments
             )
-            var buildSettingsAppenderOptions: BuildSettingsIntegrateAppenderOption = []
-            if !config.enableSwifDriverIntegration {
-                buildSettingsAppenderOptions.insert(.disableSwiftDriverIntegration)
-            }
             let buildSettingsAppender = XcodeProjBuildSettingsIntegrateAppender(
                 mode: context.mode,
                 repoRoot: context.repoRoot,
                 fakeSrcRoot: context.fakeSrcRoot,
                 sdksExclude: sdksExclude.integrateArrayArguments,
-                options: buildSettingsAppenderOptions
+                options: context.buildSettingsAppenderOptions
             )
             let lldbPatcher: LLDBInitPatcher
             switch lldbMode {

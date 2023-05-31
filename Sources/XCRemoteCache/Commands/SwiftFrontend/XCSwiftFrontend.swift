@@ -60,7 +60,7 @@ public class XCSwiftFrontend: XCSwiftAbstract<SwiftFrontendArgInput> {
             let llbuildId: String = try env.readEnv(key: "LLBUILD_BUILD_ID")
             let (_, context) = try buildContext()
 
-            let sharedLockFileURL = XCSwiftFrontend.generateLlbuildIdSharedLock(
+            let sharedLockFileURL = XCSwiftFrontend.generateLlbuildIdSharedLockUrl(
                 llbuildId: llbuildId,
                 tmpDir: context.tempDir
             )
@@ -86,7 +86,7 @@ public class XCSwiftFrontend: XCSwiftAbstract<SwiftFrontendArgInput> {
 
 extension XCSwiftFrontend {
     /// The file is used to sycnhronize mutliple swift-frontend invocations
-    static func generateLlbuildIdSharedLock(llbuildId: String, tmpDir: URL) -> URL {
+    static func generateLlbuildIdSharedLockUrl(llbuildId: String, tmpDir: URL) -> URL {
         return tmpDir.appendingPathComponent(llbuildId).appendingPathExtension("lock")
     }
 }

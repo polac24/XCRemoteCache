@@ -187,4 +187,17 @@ class PostbuildContextTests: FileXCTestCase {
 
         XCTAssertFalse(context.disabled)
     }
+
+    func testFailsIfLlBuildIdEnvIsMissing() throws {
+        var envs = Self.SampleEnvs
+        envs.removeValue(forKey: "LLBUILD_BUILD_ID")
+
+        XCTAssertThrowsError(try PostbuildContext(config, env: envs))
+    }
+
+    func testBuildsLockValidFileUrl() throws {
+        let context = try PostbuildContext(config, env: Self.SampleEnvs)
+
+        XCTAssertEqual(context.llbuildIdLockFile, "TARGET_TEMP_DIR/1.lock")
+    }
 }
