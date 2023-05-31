@@ -119,7 +119,7 @@ class PhaseCacheModeController: CacheModeController {
         }
         return false
     }
-    
+
     private func cleanupLlBuildLock() throws {
         if fileManager.fileExists(atPath: llbuildLockFile.path) {
             do {

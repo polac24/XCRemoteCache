@@ -26,7 +26,7 @@ protocol SwiftFrontendOrchestrator {
     func run(criticalSection: () -> Void ) throws
 }
 
-/// The default orchestrator that manages the order or swift-frontend invocations.
+/// The default orchestrator that manages the order or swift-frontend invocations
 /// For emit-module (the "first" process) action, it locks a shared file between all swift-frontend invcations,
 /// verifies that the mocking can be done and continues the mocking/fallbacking along the lock release
 /// For the compilation action, tries to ackquire a lock and waits until the "emit-module" makes a decision

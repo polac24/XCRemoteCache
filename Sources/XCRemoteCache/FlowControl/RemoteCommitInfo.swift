@@ -27,7 +27,7 @@ enum RemoteCommitInfo: Equatable {
 extension RemoteCommitInfo {
     init(_ commit: String?) {
         switch commit {
-        case .some(let value) where !value.isEmpty :
+        case .some(let value) where !value.isEmpty:
             self = .available(commit: value)
         default:
             self = .unavailable

@@ -132,11 +132,32 @@ public struct SwiftFrontendArgInput {
             emitModule: nil
         )
 
-        let compilationFilesInputs: SwiftcContext.CompilationFilesInputs
+        let compilationFilesInputs = buildCompilationFilesInputs(
+            primaryInputsCount: primaryInputsCount,
+            primaryInputFilesURLs: primaryInputFilesURLs
+        )
+
+        return try .init(
+            config: config,
+            moduleName: moduleName,
+            steps: steps,
+            inputs: compilationFilesInputs,
+            target: target,
+            compilationFiles: .list(inputPaths),
+            exampleWorkspaceFilePath: outputPaths[0]
+        )
+    }
+
+    private func buildCompilationFilesInputs(
+        primaryInputsCount: Int,
+        primaryInputFilesURLs: [URL]
+    ) -> SwiftcContext.CompilationFilesInputs {
         if let compimentaryFileMa = supplementaryOutputFileMap {
-            compilationFilesInputs = .supplementaryFileMap(compimentaryFileMa)
+            return .supplementaryFileMap(compimentaryFileMa)
         } else {
-            compilationFilesInputs = .map((0..<primaryInputsCount).reduce([String: SwiftFileCompilationInfo]()) { prev, i in
+            return .map((0..<primaryInputsCount).reduce(
+                [String: SwiftFileCompilationInfo]()
+            ) { prev, i in
                 var new = prev
                 new[primaryInputPaths[i]] = SwiftFileCompilationInfo(
                     file: primaryInputFilesURLs[i],
@@ -148,16 +169,6 @@ public struct SwiftFrontendArgInput {
                 return new
             })
         }
-
-        return try .init(
-            config: config,
-            moduleName: moduleName,
-            steps: steps,
-            inputs: compilationFilesInputs,
-            target: target,
-            compilationFiles: .list(inputPaths),
-            exampleWorkspaceFilePath: outputPaths[0]
-        )
     }
 
     private func generateForEmitModule(

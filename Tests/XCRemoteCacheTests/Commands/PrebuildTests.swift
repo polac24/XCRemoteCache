@@ -20,6 +20,7 @@
 @testable import XCRemoteCache
 import XCTest
 
+// swiftlint:disable file_length
 // swiftlint:disable:next type_body_length
 class PrebuildTests: FileXCTestCase {
 
@@ -52,6 +53,13 @@ class PrebuildTests: FileXCTestCase {
         remoteNetwork = RemoteNetworkClientImpl(network, URLBuilderFake(remoteCacheURL))
         remapper = DependenciesRemapperFake(baseURL: URL(fileURLWithPath: "/"))
         metaReader = JsonMetaReader(fileAccessor: FileManager.default)
+        setupNonCachedContext()
+        setupCachedContext()
+        organizer = ArtifactOrganizerFake(artifactRoot: artifactsRoot, unzippedExtension: "unzip")
+        globalCacheSwitcher = InMemoryGlobalCacheSwitcher()
+    }
+
+    private func setupNonCachedContext() {
         contextNonCached = PrebuildContext(
             targetTempDir: sampleURL,
             productsDir: sampleURL,
@@ -67,6 +75,9 @@ class PrebuildTests: FileXCTestCase {
             disabled: false,
             llbuildIdLockFile: "/tmp/lock"
         )
+    }
+
+    private func setupCachedContext() {
         contextCached = PrebuildContext(
             targetTempDir: sampleURL,
             productsDir: sampleURL,
@@ -82,8 +93,6 @@ class PrebuildTests: FileXCTestCase {
             disabled: false,
             llbuildIdLockFile: "/tmp/lock"
         )
-        organizer = ArtifactOrganizerFake(artifactRoot: artifactsRoot, unzippedExtension: "unzip")
-        globalCacheSwitcher = InMemoryGlobalCacheSwitcher()
     }
 
     override func tearDownWithError() throws {
