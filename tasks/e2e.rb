@@ -25,12 +25,14 @@ namespace :e2e do
         'primary_branch' => GIT_BRANCH,
         'mode' => 'consumer',
         'final_target' => 'XCRemoteCacheSample',
-        'artifact_maximum_age' => 0
+        'artifact_maximum_age' => 0,
+        'enable_swift_driver_integration' => true
     }.freeze
     DEFAULT_EXPECTATIONS = {
         'misses' => 0,
         'hit_rate' => 100
     }.freeze
+    EXCLUDED_ARCHS = 'x86_64'
 
     Stats = Struct.new(:hits, :misses, :hit_rate)
 
@@ -182,7 +184,7 @@ namespace :e2e do
             'derivedDataPath' => DERIVED_DATA_PATH,
         }.merge(extra_args).compact
         xcodebuild_vars = {
-            'EXCLUDED_ARCHS' => 'arm64'
+            'EXCLUDED_ARCHS' => EXCLUDED_ARCHS
         }
         args = ['set -o pipefail;', 'xcodebuild']
         args.push(*xcodebuild_args.map {|k,v| "-#{k} '#{v}'"})
