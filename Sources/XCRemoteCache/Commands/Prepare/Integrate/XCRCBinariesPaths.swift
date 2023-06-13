@@ -30,4 +30,5 @@ struct XCRCBinariesPaths {
     let ldplusplus: URL
     let prebuild: URL
     let postbuild: URL
+    let actool: URL
 }
