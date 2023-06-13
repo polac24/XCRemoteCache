@@ -89,7 +89,7 @@ class Swiftc: SwiftcProtocol {
     // TODO: consider refactoring to a separate entity
     private func assetsGeneratedSources(inputFiles: [URL]) -> [URL] {
         return inputFiles.filter { url in
-            url.lastPathComponent == "\(DependencyProcessorImpl.GENERATED_ASSETS_FILENAME).swift"
+            url.lastPathComponent == "\(DependencyProcessorImpl.generatedAssetSymbolsFilename).swift"
         }
     }
 

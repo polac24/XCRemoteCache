@@ -20,7 +20,6 @@
 import Foundation
 
 public class XCACTool {
-
     private let args: [String]
     private let objcOutput: String?
     private let swiftOutput: String?
@@ -38,13 +37,11 @@ public class XCACTool {
     }
 
     public func run() throws {
-        // Alternatively, read $PWD
-        let currentDir = FileManager.default.currentDirectoryPath
         let fileManager = FileManager.default
         let fileAccessor: FileAccessor = fileManager
         let config: XCRemoteCacheConfig
         let context: ACToolContext
-        let srcRoot: URL = URL(fileURLWithPath: currentDir)
+        let srcRoot: URL = URL(fileURLWithPath: fileManager.currentDirectoryPath)
         config = try XCRemoteCacheConfigReader(srcRootPath: srcRoot.path, fileReader: fileAccessor)
             .readConfiguration()
         context = try ACToolContext(
@@ -56,15 +53,18 @@ public class XCACTool {
         let markerReader = FileMarkerReader(context.markerURL, fileManager: fileAccessor)
         let markerWriter = FileMarkerWriter(context.markerURL, fileAccessor: fileAccessor)
         let fingerprintAccumulator = FingerprintAccumulatorImpl(algorithm: MD5Algorithm(), fileManager: fileManager)
-        let metaPathProvider = ArtifactMetaPathProvider(artifactLocation: context.activeArtifactLocation, dirScanner: fileManager)
+        let metaPathProvider = ArtifactMetaPathProvider(
+            artifactLocation: context.activeArtifactLocation,
+            dirScanner: fileManager
+        )
         let metaReader = JsonMetaReader(fileAccessor: fileManager)
 
-        // 0. Let the command run
+        // Let the command run first. The actool should be really quick as it only transforms .xcassets' json(s)
+        // to .h and .swift files
         try fallbackToDefaultAndWait(command: config.actoolCommand, args: args)
 
         let acTool = ACTool(
             markerReader: markerReader,
-            markerWriter: markerWriter,
             metaReader: metaReader,
             fingerprintAccumulator: fingerprintAccumulator,
             metaPathProvider: metaPathProvider
@@ -74,7 +74,7 @@ public class XCACTool {
         do {
             acResult = try acTool.run()
         } catch {
-            infoLog("\(config.actoolCommand) wrapper cannot recognize compare fingerprints with an error \(error)")
+            infoLog("\(config.actoolCommand) wrapper failed with an error \(error)")
             acResult = .cacheMiss
         }
 
@@ -89,11 +89,13 @@ public class XCACTool {
             // separate invocations as os_log truncates long messages
             errorLog("Failure in \(config.actoolCommand) marker setup with cache \(acResult)")
             errorLog("\(error)")
+            // to not risk over-cashing when disabling XCRC failed, we have force-stop the build
+            exit(1)
         }
     }
 
     private func fallbackToDefaultAndWait(command: String = "actool", args: [String]) throws {
-        defaultLog("Fallbacking to compilation using \(command).")
+        debugLog("Fallbacking with \(command) \(args.dropFirst())")
         do {
             try shellOut.callExternalProcessAndWait(
                 command: command,

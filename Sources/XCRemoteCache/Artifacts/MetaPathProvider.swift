@@ -29,7 +29,7 @@ protocol MetaPathProvider {
     func getMetaPath() throws -> URL
 }
 
-/// Finds the location of the meta in the unzipped artifact.
+/// Finds the location of the meta in the unzipped artifact
 /// Assumes the artifact contains only a single .json file:
 /// a meta file with filename equal to the fileKey
 class ArtifactMetaPathProvider: MetaPathProvider {

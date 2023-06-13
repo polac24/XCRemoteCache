@@ -19,7 +19,7 @@
 
 import Foundation
 
-enum XCACToolContextError: Error {
+enum ACToolContextError: Error {
     /// none of ObjC or Swift source output is defined
     case noOutputFile
 }
@@ -40,12 +40,13 @@ struct ACToolContext {
         self.objcOutput = objcOutput.map(URL.init(fileURLWithPath:))
         self.swiftOutput = swiftOutput.map(URL.init(fileURLWithPath:))
 
-        // infer the target from either objc or swift
+        // infer the target from either objc or swift as the `actool` command doesn't have these ENVs
+        // try first the ObjC .h file and fallback to .swift (pure swift targets)
         guard let sourceOutputFile = self.objcOutput ?? self.swiftOutput else {
-            throw XCACToolContextError.noOutputFile
+            throw ACToolContextError.noOutputFile
         }
 
-        // sourceOutputFile has a format $TARGET_TEMP_DIR/DerivedSources/GeneratedAssetSymbols.{swift|h}
+        // `sourceOutputFile` has a format $TARGET_TEMP_DIR/DerivedSources/GeneratedAssetSymbols.{swift|h}
         // That may be subject to change for other Xcode versions
         self.tempDir = sourceOutputFile
             .deletingLastPathComponent()
@@ -53,7 +54,7 @@ struct ACToolContext {
 
         self.markerURL = tempDir.appendingPathComponent(config.modeMarkerPath)
         activeArtifactLocation = tempDir
-            .appendingPathComponent("xccache")
+            .appendingPathComponent(ArtifactSwiftProductsBuilderImpl.localArtifactsDir)
             .appendingPathComponent(ZipArtifactOrganizer.activeArtifactLocation)
     }
 }

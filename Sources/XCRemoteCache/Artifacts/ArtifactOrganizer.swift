@@ -55,7 +55,7 @@ class ZipArtifactOrganizer: ArtifactOrganizer {
     private let fileManager: FileManager
 
     init(targetTempDir: URL, artifactProcessors: [ArtifactProcessor], fileManager: FileManager) {
-        cacheDir = targetTempDir.appendingPathComponent("xccache")
+        cacheDir = targetTempDir.appendingPathComponent(ArtifactSwiftProductsBuilderImpl.localArtifactsDir)
         self.artifactProcessors = artifactProcessors
         self.fileManager = fileManager
     }

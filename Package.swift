@@ -84,7 +84,7 @@ let package = Package(
                 "xcld",
                 "xcldplusplus",
                 "xclipo",
-                "xcactool"
+                "xcactool",
             ]
         ),
         .testTarget(

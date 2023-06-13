@@ -50,6 +50,8 @@ protocol ArtifactSwiftProductsBuilder {
 /// * all module ObjC headers are stored in
 /// # {workingDir}/xccache/produced/include/#{moduleName} (if `moduleName` is defined)
 class ArtifactSwiftProductsBuilderImpl: ArtifactSwiftProductsBuilder {
+    /// Location in the $TARGET_TEMP_DIR that will contain all unzipped artifacts
+    static let localArtifactsDir = "xccache"
 
     private let workingDir: URL
     private let moduleName: String?
@@ -62,7 +64,7 @@ class ArtifactSwiftProductsBuilderImpl: ArtifactSwiftProductsBuilder {
     }
 
     func buildingArtifactLocation() -> URL {
-        return workingDir.appendingPathComponent("xccache").appendingPathComponent("produced")
+        return workingDir.appendingPathComponent(Self.localArtifactsDir).appendingPathComponent("produced")
     }
 
     func buildingArtifactObjCHeadersLocation() -> URL {
