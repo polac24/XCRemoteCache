@@ -17,6 +17,8 @@ jobs:
     env:
       XCODE_VERSION: ${{ '15.0' }}
     steps:
+      - name: Install nginx
+        run: "brew install nginx"
       - name: Select Xcode
         run: "sudo xcode-select -s /Applications/Xcode_$XCODE_VERSION.app"
       - name: Checkout
