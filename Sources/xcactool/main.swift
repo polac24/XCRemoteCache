@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Spotify AB.
+// Copyright (c) 2023 Spotify AB.
 //
 // Licensed to the Apache Software Foundation (ASF) under one
 // or more contributor license agreements.  See the NOTICE file
@@ -17,22 +17,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import Foundation
-@testable import XCRemoteCache
+import XCRemoteCache
 
-enum MainArtifactSampleMeta {
-    static let defaults = MainArtifactMeta(
-        dependencies: [],
-        fileKey: "fileKey",
-        rawFingerprint: "",
-        generationCommit: "",
-        targetName: "",
-        configuration: "",
-        platform: "",
-        xcode: "",
-        inputs: [],
-        pluginsKeys: [:],
-        assetsSources: [],
-        assetsSourcesFingerprint: ""
-    )
-}
+XCACToolMain().main()
